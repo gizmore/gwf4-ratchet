@@ -23,7 +23,7 @@ class Server extends EventEmitter implements ServerInterface
             $host = '[' . $host . ']';
         }
 
-        if ($options['local_cert']) {
+        if (isset($options['local_cert'])) {
             $context = stream_context_create($options);
             $this->master = stream_socket_server("ssl://$host:$port", $errno, $errstr, STREAM_SERVER_BIND|STREAM_SERVER_LISTEN, $context);
         }

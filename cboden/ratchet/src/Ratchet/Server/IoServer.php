@@ -64,10 +64,10 @@ class IoServer {
      * @param  string                             $address   The address to receive sockets on (0.0.0.0 means receive connections from any)
      * @return IoServer
      */
-    public static function factory(MessageComponentInterface $component, $port = 80, $address = '0.0.0.0') {
+    public static function factory(MessageComponentInterface $component, $port = 80, array $options=array(), $address = '0.0.0.0') {
         $loop   = LoopFactory::create();
         $socket = new Reactor($loop);
-        $socket->listen($port, $address);
+        $socket->listen($port, $address, $options);
 
         return new static($component, $socket, $loop);
     }
