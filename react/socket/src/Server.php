@@ -16,14 +16,21 @@ class Server extends EventEmitter implements ServerInterface
         $this->loop = $loop;
     }
 
-    public function listen($port, $host = '127.0.0.1')
+    public function listen($port, $host = '127.0.0.1', array $options=array())
     {
         if (strpos($host, ':') !== false) {
             // enclose IPv6 addresses in square brackets before appending port
             $host = '[' . $host . ']';
         }
 
-        $this->master = @stream_socket_server("tcp://$host:$port", $errno, $errstr);
+        if ($options['local_cert']) {
+            $context = stream_context_create($options);
+            $this->master = stream_socket_server("ssl://$host:$port", $errno, $errstr, STREAM_SERVER_BIND|STREAM_SERVER_LISTEN, $context);
+        }
+		else {
+			$this->master = stream_socket_server("tcp://$host:$port", $errno, $errstr);
+		}
+
         if (false === $this->master) {
             $message = "Could not bind to tcp://$host:$port: $errstr";
             throw new ConnectionException($message, $errno);
