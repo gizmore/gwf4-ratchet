@@ -31,6 +31,14 @@ class HttpServer implements MessageComponentInterface {
     public function onOpen(ConnectionInterface $conn) {
         $conn->httpHeadersReceived = false;
     }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function onBinaryMessage(ConnectionInterface $from, $msg) {
+    	$this->_httpServer->onBinaryMessage($from, $msg);
+    }
+    
 
     /**
      * {@inheritdoc}

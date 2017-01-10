@@ -78,9 +78,13 @@ class WsServer implements HttpServerInterface {
 
         $conn->WebSocket              = new \StdClass;
         $conn->WebSocket->request     = $request;
+        $clientip = $request->getHeader('X-Forwarded-For');
+        echo "IP: $clientip\n";
+        if (!empty($clientip)) {
+        	$conn->setIP($clientip);
+        }
         $conn->WebSocket->established = false;
         $conn->WebSocket->closing     = false;
-
         $this->attemptUpgrade($conn);
     }
 
@@ -97,6 +101,21 @@ class WsServer implements HttpServerInterface {
         }
 
         $this->attemptUpgrade($from, $msg);
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function onBinaryMessage(ConnectionInterface $from, $msg) {
+    	if ($from->WebSocket->closing) {
+    		return;
+    	}
+    	
+    	if (true === $from->WebSocket->established) {
+    		return $from->WebSocket->version->onBinaryMessage($this->connections[$from], $msg);
+		}
+
+		$this->attemptUpgrade($from, $msg);
     }
 
     protected function attemptUpgrade(ConnectionInterface $conn, $data = '') {

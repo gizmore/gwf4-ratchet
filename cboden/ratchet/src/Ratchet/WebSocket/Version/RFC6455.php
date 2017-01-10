@@ -23,6 +23,9 @@ class RFC6455 implements VersionInterface {
      * @var RFC6455\HandshakeVerifier
      */
     protected $_verifier;
+    
+    static $num=0;
+    
 
     /**
      * A lookup of the valid close codes that can be sent in a frame
@@ -194,14 +197,19 @@ class RFC6455 implements VersionInterface {
         }
 
         if ($from->WebSocket->message->isCoalesced()) {
+        	$opcode = $from->WebSocket->message->getOpcode();
             $parsed = $from->WebSocket->message->getPayload();
             unset($from->WebSocket->message);
 
-            if (!$this->validator->checkEncoding($parsed, 'UTF-8')) {
-                return $from->close(Frame::CLOSE_BAD_PAYLOAD);
-            }
-
-            $from->WebSocket->coalescedCallback->onMessage($from, $parsed);
+            if ($opcode == Frame::OP_BINARY && method_exists($from->WebSocket->coalescedCallback, 'onBinaryMessage')) {
+				$from->WebSocket->coalescedCallback->onBinaryMessage($from, $parsed);
+			}
+			elseif($opcode==Frame::OP_TEXT) {
+				if (!$this->validator->checkEncoding($parsed, 'UTF-8')) {
+					return $from->close(Frame::CLOSE_BAD_PAYLOAD);
+				}
+				$from->WebSocket->coalescedCallback->onMessage($from, $parsed);
+			}
         }
 
         if (strlen($overflow) > 0) {

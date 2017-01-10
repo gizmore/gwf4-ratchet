@@ -26,6 +26,20 @@ class Connection extends AbstractConnectionDecorator {
     /**
      * {@inheritdoc}
      */
+    public function sendBinary($msg) {
+    	if (!$this->WebSocket->closing) {
+    		if (!($msg instanceof DataInterface)) {
+    			$msg = new Frame($msg, true, Frame::OP_BINARY);
+    		}
+			$this->getConnection()->send($msg->getContents());
+    	}
+		return $this;
+    }
+    			
+    			
+    /**
+     * {@inheritdoc}
+     */
     public function close($code = 1000) {
         if ($this->WebSocket->closing) {
             return;

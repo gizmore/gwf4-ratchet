@@ -11,11 +11,30 @@ abstract class AbstractConnectionDecorator implements ConnectionInterface {
      * @var ConnectionInterface
      */
     protected $wrappedConn;
+    
+    private $user;
+    private $ip = null;
 
     public function __construct(ConnectionInterface $conn) {
         $this->wrappedConn = $conn;
     }
+    
+    public function user() {
+    	return $this->user;
+    }
+    
+    public function setUser($user) {
+    	$this->user = $user;
+    }
 
+    public function getRemoteAddress() {
+    	return $this->ip === null ? $this->wrappedConn->getConnection()->getRemoteAddress() : $this->ip;
+    }
+    
+    public function setRemoteAddress($ip) {
+    	$this->ip = $ip;
+    }
+    
     /**
      * @return ConnectionInterface
      */
