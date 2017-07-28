@@ -78,11 +78,6 @@ class WsServer implements HttpServerInterface {
 
         $conn->WebSocket              = new \StdClass;
         $conn->WebSocket->request     = $request;
-        $clientip = $request->getHeader('X-Forwarded-For');
-        echo "IP: $clientip\n";
-        if (!empty($clientip)) {
-        	$conn->setIP($clientip);
-        }
         $conn->WebSocket->established = false;
         $conn->WebSocket->closing     = false;
         $this->attemptUpgrade($conn);
@@ -147,9 +142,15 @@ class WsServer implements HttpServerInterface {
         if (101 != $response->getStatusCode()) {
             return $conn->close();
         }
-
+        
+        
         $upgraded = $conn->WebSocket->version->upgradeConnection($conn, $this->component);
 
+        # gizmore: set Proxy IP
+        if ($clientip = $conn->WebSocket->request->getHeader('X-Forwarded-For')) {
+            $upgraded->setRemoteAddress((string)$clientip);
+        }
+        
         $this->connections->attach($conn, $upgraded);
 
         $upgraded->WebSocket->established = true;
