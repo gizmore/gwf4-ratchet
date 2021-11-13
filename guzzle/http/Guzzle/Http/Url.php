@@ -40,7 +40,7 @@ class Url
         $parts += $defaults;
 
         // Convert the query string into a QueryString object
-        if ($parts['query'] || 0 !== strlen($parts['query'])) {
+        if (is_string($parts['query'])) {
             $parts['query'] = QueryString::fromString($parts['query']);
         }
 
